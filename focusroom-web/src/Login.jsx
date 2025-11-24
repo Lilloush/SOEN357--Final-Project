@@ -1,3 +1,4 @@
+// Login.jsx
 import { useState } from "react";
 
 function LoginPage({ onLogin }) {
@@ -8,6 +9,7 @@ function LoginPage({ onLogin }) {
     e.preventDefault();
     if (!name.trim()) return;
 
+    // App will take care of saving this user into localStorage
     onLogin({
       name: name.trim(),
       code: code.trim() || null,

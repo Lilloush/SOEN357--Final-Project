@@ -1,11 +1,11 @@
 // Settings.jsx
-import { useState } from "react";
-
-function Settings({ user, onBackHome, onLogout }) {
-  const [darkMode, setDarkMode] = useState(false);
-  const [autoJoinMic, setAutoJoinMic] = useState(false);
-  const [autoJoinCam, setAutoJoinCam] = useState(false);
-  const [notifications, setNotifications] = useState(true);
+function Settings({ user, preferences, setPreferences, onBackHome, onLogout }) {
+  function togglePreference(key) {
+    setPreferences((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  }
 
   return (
     <div className="main-page">
@@ -40,8 +40,8 @@ function Settings({ user, onBackHome, onLogout }) {
               </span>
               <input
                 type="checkbox"
-                checked={darkMode}
-                onChange={() => setDarkMode((v) => !v)}
+                checked={preferences.darkMode}
+                onChange={() => togglePreference("darkMode")}
               />
             </label>
 
@@ -52,8 +52,8 @@ function Settings({ user, onBackHome, onLogout }) {
               </span>
               <input
                 type="checkbox"
-                checked={autoJoinMic}
-                onChange={() => setAutoJoinMic((v) => !v)}
+                checked={preferences.autoJoinMic}
+                onChange={() => togglePreference("autoJoinMic")}
               />
             </label>
 
@@ -64,8 +64,8 @@ function Settings({ user, onBackHome, onLogout }) {
               </span>
               <input
                 type="checkbox"
-                checked={autoJoinCam}
-                onChange={() => setAutoJoinCam((v) => !v)}
+                checked={preferences.autoJoinCam}
+                onChange={() => togglePreference("autoJoinCam")}
               />
             </label>
 
@@ -76,8 +76,8 @@ function Settings({ user, onBackHome, onLogout }) {
               </span>
               <input
                 type="checkbox"
-                checked={notifications}
-                onChange={() => setNotifications((v) => !v)}
+                checked={preferences.notifications}
+                onChange={() => togglePreference("notifications")}
               />
             </label>
           </div>

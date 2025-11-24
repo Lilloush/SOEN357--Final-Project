@@ -631,3 +631,58 @@ input[type="text"]:focus {
   flex-direction: column;
   gap: 0.4rem;
 }
+
+/* -------------------------------------------------------
+   DARK MODE OVERRIDES (applied when <body> has .focusroom-dark)
+--------------------------------------------------------- */
+
+body.focusroom-dark {
+  background: #020617;
+  color: #e5e7eb;
+}
+
+body.focusroom-dark .main-page,
+body.focusroom-dark .room-page {
+  background: #020617;
+}
+
+body.focusroom-dark .topbar,
+body.focusroom-dark .room-topbar {
+  background: #020617;
+  border-bottom-color: #1f2937;
+}
+
+body.focusroom-dark .my-rooms,
+body.focusroom-dark .join-room,
+body.focusroom-dark .profile-card,
+body.focusroom-dark .settings-card,
+body.focusroom-dark .virtual-room-card,
+body.focusroom-dark .room-sidebar,
+body.focusroom-dark .room-main-left,
+body.focusroom-dark .video-tile {
+  background: #0b1120;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.8);
+  color: #e5e7eb;
+}
+
+body.focusroom-dark .shared-panel,
+body.focusroom-dark .file-viewer {
+  background: #020617;
+}
+
+body.focusroom-dark .logged-as,
+body.focusroom-dark .settings-sub,
+body.focusroom-dark .virtual-sub,
+body.focusroom-dark .room-subtitle {
+  color: #9ca3af;
+}
+
+body.focusroom-dark input[type="text"],
+body.focusroom-dark input[type="checkbox"] {
+  background: #020617;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+
+

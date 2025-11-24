@@ -40,7 +40,7 @@ function MainPage({
     onShowSettings();
   }
 
-  function handleLogout() {
+  function handleLogoutClick() {
     setMenuOpen(false);
     onLogout();
   }
@@ -69,7 +69,7 @@ function MainPage({
               <div className="menu-dropdown">
                 <button onClick={handleSettings}>Parameters</button>
                 <button onClick={handleProfile}>My profile</button>
-                <button onClick={handleLogout}>Log out</button>
+                <button onClick={handleLogoutClick}>Log out</button>
               </div>
             )}
           </div>
@@ -80,9 +80,7 @@ function MainPage({
       <div className="main-center">
         <div className="main-layout">
           {/* My rooms (toggleable side panel) */}
-          <section
-            className={`my-rooms ${roomsOpen ? "open" : "collapsed"}`}
-          >
+          <section className={`my-rooms ${roomsOpen ? "open" : "collapsed"}`}>
             <div className="my-rooms-header">
               <h2>My rooms</h2>
               <button
