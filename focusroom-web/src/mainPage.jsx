@@ -1,6 +1,14 @@
+// mainPage.jsx
 import { useState } from "react";
 
-function MainPage({ user, onLogout, onEnterRoom }) {
+function MainPage({
+  user,
+  onLogout,
+  onEnterRoom,
+  onShowProfile,
+  onShowSettings,
+  onShowVirtualRoom,
+}) {
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [myRooms, setMyRooms] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -23,13 +31,13 @@ function MainPage({ user, onLogout, onEnterRoom }) {
   }
 
   function handleProfile() {
-    alert("My profile (placeholder).");
     setMenuOpen(false);
+    onShowProfile();
   }
 
   function handleSettings() {
-    alert("Parameters / settings (placeholder).");
     setMenuOpen(false);
+    onShowSettings();
   }
 
   function handleLogout() {
@@ -48,12 +56,7 @@ function MainPage({ user, onLogout, onEnterRoom }) {
         </div>
 
         <div className="topbar-right">
-          <button
-            className="ghost-btn"
-            onClick={() =>
-              alert("3D room will open here")
-            }
-          >
+          <button className="ghost-btn" onClick={onShowVirtualRoom}>
             Enter 3D Room
           </button>
 
