@@ -1,6 +1,14 @@
+// mainPage.jsx
 import { useState } from "react";
 
-function MainPage({ user, onLogout, onEnterRoom }) {
+function MainPage({
+  user,
+  onLogout,
+  onEnterRoom,
+  onShowProfile,
+  onShowSettings,
+  onShowVirtualRoom,
+}) {
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [myRooms, setMyRooms] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -23,16 +31,16 @@ function MainPage({ user, onLogout, onEnterRoom }) {
   }
 
   function handleProfile() {
-    alert("My profile (placeholder).");
     setMenuOpen(false);
+    onShowProfile();
   }
 
   function handleSettings() {
-    alert("Parameters / settings (placeholder).");
     setMenuOpen(false);
+    onShowSettings();
   }
 
-  function handleLogout() {
+  function handleLogoutClick() {
     setMenuOpen(false);
     onLogout();
   }
@@ -48,12 +56,7 @@ function MainPage({ user, onLogout, onEnterRoom }) {
         </div>
 
         <div className="topbar-right">
-          <button
-            className="ghost-btn"
-            onClick={() =>
-              alert("3D room will open here")
-            }
-          >
+          <button className="ghost-btn" onClick={onShowVirtualRoom}>
             Enter 3D Room
           </button>
 
@@ -66,7 +69,7 @@ function MainPage({ user, onLogout, onEnterRoom }) {
               <div className="menu-dropdown">
                 <button onClick={handleSettings}>Parameters</button>
                 <button onClick={handleProfile}>My profile</button>
-                <button onClick={handleLogout}>Log out</button>
+                <button onClick={handleLogoutClick}>Log out</button>
               </div>
             )}
           </div>
@@ -77,9 +80,7 @@ function MainPage({ user, onLogout, onEnterRoom }) {
       <div className="main-center">
         <div className="main-layout">
           {/* My rooms (toggleable side panel) */}
-          <section
-            className={`my-rooms ${roomsOpen ? "open" : "collapsed"}`}
-          >
+          <section className={`my-rooms ${roomsOpen ? "open" : "collapsed"}`}>
             <div className="my-rooms-header">
               <h2>My rooms</h2>
               <button
