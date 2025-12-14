@@ -1165,3 +1165,103 @@ body.focusroom-dark .room-code {
 body.focusroom-dark .small-btn {
   background: #4f46e5;
 }
+/* ---------------- Whiteboard ---------------- */
+.whiteboard-card{
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  overflow: hidden;
+}
+
+.whiteboard-toolbar{
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.8rem;
+  background: rgba(243, 244, 255, 0.85);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+  flex-wrap: wrap;
+}
+
+.wb-left, .wb-right{
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tool-btn{
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 12px;
+  padding: 0.45rem 0.75rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+.tool-btn:hover{
+  transform: translateY(-1px);
+  background: rgba(243, 244, 255, 0.9);
+}
+
+.tool-btn.active{
+  background: rgba(99, 102, 241, 0.14);
+  border-color: rgba(99, 102, 241, 0.28);
+  color: var(--color-primary-dark);
+}
+
+.tool-btn.danger{
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+}
+
+.color-input{
+  width: 38px;
+  height: 34px;
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 10px;
+  padding: 0;
+}
+
+.wb-size{
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.wb-size input[type="range"]{
+  width: 140px;
+}
+
+.whiteboard-wrap{
+  height: clamp(420px, 72vh, 820px);
+  background: #ffffff;
+}
+
+.whiteboard-canvas{
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none; 
+  cursor: crosshair;
+}
+.wb-pages{
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wb-pageText{
+  font-weight: 750;
+  color: var(--color-muted);
+}
+
