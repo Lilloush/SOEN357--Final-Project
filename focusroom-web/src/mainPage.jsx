@@ -46,38 +46,40 @@ function MainPage({
   }
 
   return (
-    <div className="main-page">
-      {/* Top bar */}
-      <header className="topbar">
-        <div className="topbar-left">
-          <span className="logo-dot" />
-          <span className="logo-text">FocusRoom</span>
-          <span className="logged-as">Logged in as {user.name}</span>
-        </div>
+      <div className="main-page">
+        {/* Top bar */}
+        <header className="topbar">
+          <div className="topbar-left">
+            <span className="logo-dot" />
+            <span className="logo-text">FocusRoom</span>
+            <span className="logged-as">Logged in as {user.name}</span>
+          </div>
 
-        <div className="topbar-right">
-          <button className="ghost-btn" onClick={onShowVirtualRoom}>
-            Enter 3D Room
-          </button>
-
-          <div className="menu-wrapper">
-            <button className="menu-btn" onClick={handleMenuClick}>
-              ☰
+          <div className="topbar-right">
+            <button className="ghost-btn" onClick={onShowVirtualRoom}>
+              Enter 3D Room
             </button>
 
-            {menuOpen && (
-              <div className="menu-dropdown">
-                <button onClick={handleSettings}>Parameters</button>
-                <button onClick={handleProfile}>My profile</button>
-                <button onClick={handleLogoutClick}>Log out</button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+            <div className="menu-wrapper">
+              <button className="menu-btn" onClick={handleMenuClick}>
+                ☰
+              </button>
 
-      {/* Main content */}
-      <div className="main-center">
+              {menuOpen && (
+                <div className="menu-dropdown">
+                  <button onClick={handleSettings}>Parameters</button>
+                  <button onClick={handleProfile}>My profile</button>
+                  <button onClick={handleLogoutClick}>Log out</button>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+
+        <h1 className="welcome-text">Welcome to FocusRoom, {user.name}</h1>
+        
+        <div className="main-center">
+        
         <div className="main-layout">
           {/* My rooms (toggleable side panel) */}
           <section className={`my-rooms ${roomsOpen ? "open" : "collapsed"}`}>
