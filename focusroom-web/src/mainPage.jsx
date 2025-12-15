@@ -1,5 +1,5 @@
 // mainPage.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function MainPage({
   user,
@@ -10,19 +10,45 @@ function MainPage({
   onShowVirtualRoom,
 }) {
   const [roomCodeInput, setRoomCodeInput] = useState("");
-  const [myRooms, setMyRooms] = useState([]);
+  const storageKey = `focusroom_myRooms_v1_${user?.name || "anon"}`;
+
+  const [myRooms, setMyRooms] = useState(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [menuOpen, setMenuOpen] = useState(false);
-  const [roomsOpen, setRoomsOpen] = useState(true); // toggle state
+  const [roomsOpen, setRoomsOpen] = useState(true);
+
+  function normalizeCode(value) {
+    return String(value || "").trim().toUpperCase();
+  }
+
+  function persistRooms(list) {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(list));
+    } catch {}
+  }
+
+  useEffect(() => {
+    persistRooms(myRooms);
+  }, [myRooms]);
 
   function handleJoinRoom(e) {
     e.preventDefault();
-    const code = roomCodeInput.trim().toUpperCase();
+    const code = normalizeCode(roomCodeInput);
     if (!code) return;
 
-    setMyRooms((prev) => (prev.includes(code) ? prev : [...prev, code]));
+    const nextRooms = myRooms.includes(code) ? myRooms : [...myRooms, code];
+
+    persistRooms(nextRooms);
+    setMyRooms(nextRooms);
     setRoomCodeInput("");
 
-    // jump directly into the room after joining
     onEnterRoom(code);
   }
 
@@ -46,42 +72,39 @@ function MainPage({
   }
 
   return (
-      <div className="main-page">
-        {/* Top bar */}
-        <header className="topbar">
-          <div className="topbar-left">
-            <span className="logo-dot" />
-            <span className="logo-text">FocusRoom</span>
-            <span className="logged-as">Logged in as {user.name}</span>
-          </div>
+    <div className="main-page">
+      <header className="topbar">
+        <div className="topbar-left">
+          <span className="logo-dot" />
+          <span className="logo-text">FocusRoom</span>
+          <span className="logged-as">Logged in as {user.name}</span>
+        </div>
 
-          <div className="topbar-right">
-            <button className="ghost-btn" onClick={onShowVirtualRoom}>
-              Enter 3D Room
+        <div className="topbar-right">
+          <button className="ghost-btn" onClick={onShowVirtualRoom}>
+            Enter 3D Room
+          </button>
+
+          <div className="menu-wrapper">
+            <button className="menu-btn" onClick={handleMenuClick}>
+              ☰
             </button>
 
-            <div className="menu-wrapper">
-              <button className="menu-btn" onClick={handleMenuClick}>
-                ☰
-              </button>
-
-              {menuOpen && (
-                <div className="menu-dropdown">
-                  <button onClick={handleSettings}>Parameters</button>
-                  <button onClick={handleProfile}>My profile</button>
-                  <button onClick={handleLogoutClick}>Log out</button>
-                </div>
-              )}
-            </div>
+            {menuOpen && (
+              <div className="menu-dropdown">
+                <button onClick={handleSettings}>Parameters</button>
+                <button onClick={handleProfile}>My profile</button>
+                <button onClick={handleLogoutClick}>Log out</button>
+              </div>
+            )}
           </div>
-        </header>
+        </div>
+      </header>
 
-        <h1 className="welcome-text">Welcome to FocusRoom, {user.name}</h1>
-        
-        <div className="main-center">
-        
+      <h1 className="welcome-text">Welcome to FocusRoom, {user.name}</h1>
+
+      <div className="main-center">
         <div className="main-layout">
-          {/* My rooms (toggleable side panel) */}
           <section className={`my-rooms ${roomsOpen ? "open" : "collapsed"}`}>
             <div className="my-rooms-header">
               <h2>My rooms</h2>
@@ -103,10 +126,7 @@ function MainPage({
                   {myRooms.map((code) => (
                     <li key={code}>
                       <span className="room-code">{code}</span>
-                      <button
-                        className="small-btn"
-                        onClick={() => onEnterRoom(code)}
-                      >
+                      <button className="small-btn" onClick={() => onEnterRoom(code)}>
                         Enter
                       </button>
                     </li>
@@ -116,7 +136,6 @@ function MainPage({
             </div>
           </section>
 
-          {/* Join room  */}
           <section className="join-room">
             <h2>Join a room</h2>
             <p>Enter a room code to join or create it.</p>
@@ -132,8 +151,7 @@ function MainPage({
             </form>
 
             <small>
-              If the room does not exist yet, it will be created and added to
-              your list.
+              If the room does not exist yet, it will be created and added to your list.
             </small>
           </section>
         </div>

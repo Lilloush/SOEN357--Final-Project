@@ -145,6 +145,78 @@ function CamIcon({ on, className = "" }) {
   );
 }
 
+/* minimal sidebar icons */
+function ShareIcon({ className = "" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M21 12a9 9 0 1 1-3.2-6.9"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M21 3v6h-6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function FileIcon({ className = "" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-7-6Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M14 2v6h6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function BoardIcon({ className = "" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M4 4h16v12H4z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 20h8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M12 16v4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 /* ---------------- Participants ---------------- */
 function ParticipantsPanel({
   participants,
@@ -245,30 +317,33 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
   const screenStreamRef = useRef(null);
 
   /* ---------- Whiteboard ---------- */
-  const wbViewportRef = useRef(null); // scroll container
+  const wbViewportRef = useRef(null);
   const wbCanvasRef = useRef(null);
 
-  const wbImgInputRef = useRef(null);
-  const wbPdfInputRef = useRef(null);
+  const wbMediaInputRef = useRef(null);
 
-  const wbBgTypeRef = useRef("none"); // none | image | pdf
+
+  const wbBgTypeRef = useRef("none");
   const wbImgUrlRef = useRef("");
   const wbImgRef = useRef(null);
 
   const wbPdfUrlRef = useRef("");
   const wbPdfDocRef = useRef(null);
-  const wbPdfPagesRef = useRef([]); // [{canvas, w, h, x, y}]
+  const wbPdfPagesRef = useRef([]);
 
   const wbGapRef = useRef(18);
 
   const isDrawingRef = useRef(false);
   const isPanningRef = useRef(false);
   const panStartRef = useRef({ x: 0, y: 0, sx: 0, sy: 0 });
+  const spaceDownRef = useRef(false);
+const [spaceDown, setSpaceDown] = useState(false);
 
-  const [wbTool, setWbTool] = useState("pen"); // pen | eraser | hand
+
+  const [wbTool, setWbTool] = useState("pen");
   const [wbColor, setWbColor] = useState("#111827");
   const [wbSize, setWbSize] = useState(4);
-  const [wbStrokes, setWbStrokes] = useState([]); // { tool, color, size, points:[{x,y}] }
+  const [wbStrokes, setWbStrokes] = useState([]);
 
   const isImageFile = fileType.startsWith("image/");
   const isFileOpen = Boolean(fileUrl);
@@ -287,6 +362,33 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
     if (participants && participants.length > 0) return participants;
     return [{ id: "me", name: user.name, micOn, camOn }];
   }, [participants, user.name, micOn, camOn]);
+
+useEffect(() => {
+  const onDown = (e) => {
+    if (e.code === "Space") {
+      e.preventDefault();
+      spaceDownRef.current = true;
+      setSpaceDown(true);
+    }
+  };
+
+  const onUp = (e) => {
+    if (e.code === "Space") {
+      e.preventDefault();
+      spaceDownRef.current = false;
+      setSpaceDown(false);
+    }
+  };
+
+  window.addEventListener("keydown", onDown, { passive: false });
+  window.addEventListener("keyup", onUp, { passive: false });
+
+  return () => {
+    window.removeEventListener("keydown", onDown);
+    window.removeEventListener("keyup", onUp);
+  };
+}, []);
+
 
   useEffect(() => {
     audioRef.current = new Audio();
@@ -518,7 +620,6 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
     }
   }
 
-  // keep canvas synced with viewport size + pdf pages layout
   useEffect(() => {
     if (!whiteboardOn) return;
 
@@ -549,16 +650,13 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
     ro.observe(viewport);
 
     return () => ro.disconnect();
-    
   }, [whiteboardOn]);
 
   useEffect(() => {
     if (!whiteboardOn) return;
     wbRedraw();
-    
   }, [wbStrokes, whiteboardOn]);
 
-  /* ---------- Whiteboard: pointer coords with scroll ---------- */
   function wbPos(e) {
     const viewport = wbViewportRef.current;
     const canvas = wbCanvasRef.current;
@@ -573,17 +671,18 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
   function wbPointerDown(e) {
     if (!whiteboardOn) return;
 
-    if (wbTool === "hand") {
-      isPanningRef.current = true;
-      const viewport = wbViewportRef.current;
-      panStartRef.current = {
-        x: e.clientX,
-        y: e.clientY,
-        sx: viewport ? viewport.scrollLeft : 0,
-        sy: viewport ? viewport.scrollTop : 0,
-      };
-      return;
-    }
+   if (spaceDownRef.current) {
+  isPanningRef.current = true;
+  const viewport = wbViewportRef.current;
+  panStartRef.current = {
+    x: e.clientX,
+    y: e.clientY,
+    sx: viewport ? viewport.scrollLeft : 0,
+    sy: viewport ? viewport.scrollTop : 0,
+  };
+  return;
+}
+
 
     isDrawingRef.current = true;
     const p = wbPos(e);
@@ -596,7 +695,8 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
   function wbPointerMove(e) {
     if (!whiteboardOn) return;
 
-    if (isPanningRef.current && wbTool === "hand") {
+    if (isPanningRef.current) {
+
       const viewport = wbViewportRef.current;
       if (!viewport) return;
 
@@ -645,7 +745,30 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
     a.click();
   }
 
-  /* ---------- Whiteboard: add IMAGE ---------- */
+  function wbOpenMedia() {
+  wbMediaInputRef.current?.click();
+}
+
+async function wbMediaChange(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+
+  const isPdf =
+    file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+  const isImg = file.type.startsWith("image/");
+
+  if (isImg) {
+    wbImageChange({ target: { files: [file] } });
+  } else if (isPdf) {
+    await wbPdfChange({ target: { files: [file] } });
+  } else {
+    alert("Please choose an image or a PDF.");
+  }
+
+  e.target.value = "";
+}
+
+
   function wbOpenImage() {
     wbImgInputRef.current?.click();
   }
@@ -685,7 +808,6 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
     img.src = url;
   }
 
-  /* ---------- Whiteboard: add PDF  ---------- */
   function wbOpenPdf() {
     wbPdfInputRef.current?.click();
   }
@@ -740,7 +862,7 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
     for (let i = 1; i <= doc.numPages; i++) {
       const page = await doc.getPage(i);
       const base = page.getViewport({ scale: 1 });
-      const scale = (contentW / base.width) * 2; 
+      const scale = (contentW / base.width) * 2;
       const vp = page.getViewport({ scale });
 
       const off = document.createElement("canvas");
@@ -823,9 +945,7 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
       <header className="room-topbar">
         <div className="room-topbar-left">
           <span className="room-title">Room {roomCode}</span>
-          <span className="room-subtitle">
-            You are in a live session as {user.name}
-          </span>
+          <span className="room-subtitle">You are in a live session as {user.name}</span>
         </div>
 
         <div className="room-topbar-right">
@@ -859,13 +979,7 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
                         >
                           Eraser
                         </button>
-                        <button
-                          type="button"
-                          className={`tool-btn ${wbTool === "hand" ? "active" : ""}`}
-                          onClick={() => setWbTool("hand")}
-                        >
-                          Hand
-                        </button>
+                        
 
                         <input
                           type="color"
@@ -896,27 +1010,17 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
                           Clear
                         </button>
 
-                        <button type="button" className="tool-btn" onClick={wbOpenImage}>
-                          Add image
-                        </button>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          ref={wbImgInputRef}
-                          style={{ display: "none" }}
-                          onChange={wbImageChange}
-                        />
+                        <button type="button" className="tool-btn" onClick={wbOpenMedia}>
+  Add media
+</button>
+<input
+  type="file"
+  accept="image/*,application/pdf"
+  ref={wbMediaInputRef}
+  style={{ display: "none" }}
+  onChange={wbMediaChange}
+/>
 
-                        <button type="button" className="tool-btn" onClick={wbOpenPdf}>
-                          Add PDF
-                        </button>
-                        <input
-                          type="file"
-                          accept="application/pdf"
-                          ref={wbPdfInputRef}
-                          style={{ display: "none" }}
-                          onChange={wbPdfChange}
-                        />
 
                         <button type="button" className="tool-btn" onClick={wbRemoveBackground}>
                           Remove bg
@@ -931,7 +1035,8 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
                     <div className="whiteboard-viewport" ref={wbViewportRef}>
                       <canvas
                         ref={wbCanvasRef}
-                        className={`whiteboard-canvas ${wbTool === "hand" ? "hand" : ""}`}
+                        className={`whiteboard-canvas ${spaceDown ? "panning" : ""}`}
+
                         onPointerDown={wbPointerDown}
                         onPointerMove={wbPointerMove}
                         onPointerUp={wbPointerUp}
@@ -952,41 +1057,6 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
                     toggleCam={toggleCam}
                   />
                 </div>
-
-                {camOn && (
-                  <div className="pip-camera pip-left">
-                    <div className="pip-videoBox">
-                      <video
-                        ref={videoRef}
-                        className="pip-video"
-                        autoPlay
-                        playsInline
-                        muted
-                      />
-                    </div>
-                    <div className="pip-footer">
-                      <span className="pip-name">{user.name} (You)</span>
-                      <div className="video-actions">
-                        <button
-                          type="button"
-                          className={`icon-toggle ${micOn ? "on" : "off"}`}
-                          onClick={toggleMic}
-                          title={micOn ? "Mute mic" : "Unmute mic"}
-                        >
-                          <MicIcon on={micOn} className="status-svg" />
-                        </button>
-                        <button
-                          type="button"
-                          className={`icon-toggle ${camOn ? "on" : "off"}`}
-                          onClick={toggleCam}
-                          title={camOn ? "Turn camera off" : "Turn camera on"}
-                        >
-                          <CamIcon on={camOn} className="status-svg" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -1015,25 +1085,6 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
                     toggleCam={toggleCam}
                   />
                 </div>
-
-                {camOn && (
-                  <div className="pip-camera pip-left">
-                    <div className="pip-videoBox">
-                      <video ref={videoRef} className="pip-video" autoPlay playsInline muted />
-                    </div>
-                    <div className="pip-footer">
-                      <span className="pip-name">{user.name} (You)</span>
-                      <div className="video-actions">
-                        <button type="button" className={`icon-toggle ${micOn ? "on" : "off"}`} onClick={toggleMic}>
-                          <MicIcon on={micOn} className="status-svg" />
-                        </button>
-                        <button type="button" className={`icon-toggle ${camOn ? "on" : "off"}`} onClick={toggleCam}>
-                          <CamIcon on={camOn} className="status-svg" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -1104,34 +1155,83 @@ function Room({ user, roomCode, onLeave, participants = [] }) {
           )}
         </div>
 
-        <aside className="room-sidebar">
-          <h3>Session controls</h3>
+        <aside className="room-sidebar room-sidebar-min">
+          <div className="min-head">
+            <div className="min-title">
+              <h3>Controls</h3>
+              <p className="min-sub">Room {roomCode}</p>
+            </div>
 
-          <div className="shared-panel">
-            <p>Screen share: <strong>{screenSharing ? "On" : "Off"}</strong></p>
-            <p>Opened file: <strong>{fileName || "No file opened"}</strong></p>
-            <p>Whiteboard: <strong>{whiteboardOn ? "On" : "Off"}</strong></p>
+            <div className="min-dots">
+              <span className={`min-dot ${screenSharing ? "on" : ""}`} title={screenSharing ? "Sharing screen" : "Screen share off"} />
+              <span className={`min-dot ${fileUrl ? "on" : ""}`} title={fileUrl ? "File opened" : "No file"} />
+              <span className={`min-dot ${whiteboardOn ? "on" : ""}`} title={whiteboardOn ? "Whiteboard on" : "Whiteboard off"} />
+            </div>
           </div>
 
-          <div className="room-controls">
-            <button onClick={toggleScreenShare}>
-              {screenSharing ? "Stop screen share" : "Share screen"}
+          <div className="min-grid">
+            <button
+              className={`min-tile ${screenSharing ? "active" : ""}`}
+              onClick={toggleScreenShare}
+              type="button"
+            >
+              <ShareIcon className="min-ico" />
+              <div className="min-txt">
+                <span>Screen</span>
+                <small>{screenSharing ? "Stop" : "Share"}</small>
+              </div>
             </button>
 
-            <button onClick={handleOpenFileClick}>Open file</button>
+            <button
+              className={`min-tile ${fileUrl ? "active" : ""}`}
+              onClick={fileUrl ? clearOpenedFile : handleOpenFileClick}
+              type="button"
+            >
+              <FileIcon className="min-ico" />
+              <div className="min-txt">
+                <span>File</span>
+                <small>{fileUrl ? "Close" : "Open"}</small>
+              </div>
+            </button>
+
+            <button
+              className={`min-tile ${whiteboardOn ? "active" : ""}`}
+              onClick={toggleWhiteboard}
+              type="button"
+            >
+              <BoardIcon className="min-ico" />
+              <div className="min-txt">
+                <span>Board</span>
+                <small>{whiteboardOn ? "Close" : "Open"}</small>
+              </div>
+            </button>
+
             <input
               type="file"
               ref={fileInputRef}
               style={{ display: "none" }}
               onChange={handleFileChange}
             />
-
-            <button onClick={toggleWhiteboard}>
-              {whiteboardOn ? "Close whiteboard" : "Open whiteboard"}
-            </button>
-
-            {fileUrl && <button onClick={clearOpenedFile}>Close file</button>}
           </div>
+          {camOn && (mode === "file" || mode === "whiteboard") && (
+  <div className="sidebar-pip">
+    <div className="sidebar-pip-videoBox">
+      <video ref={videoRef} className="sidebar-pip-video" autoPlay playsInline muted />
+    </div>
+    <div className="sidebar-pip-footer">
+      <span className="sidebar-pip-name">{user.name} (You)</span>
+      <div className="video-actions">
+        <button type="button" className={`icon-toggle ${micOn ? "on" : "off"}`} onClick={toggleMic}>
+          <MicIcon on={micOn} className="status-svg" />
+        </button>
+        <button type="button" className={`icon-toggle ${camOn ? "on" : "off"}`} onClick={toggleCam}>
+          <CamIcon on={camOn} className="status-svg" />
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
         </aside>
       </div>
     </div>
